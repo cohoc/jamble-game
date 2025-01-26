@@ -1,0 +1,616 @@
+@font-face {
+    font-family: Inter;
+    font-display: swap;
+    src: url("/assets/fonts/Inter/Inter-VariableFont_opsz\,wght.ttf");
+}
+
+@font-face{
+    font-family: Indie-Flower;
+    font-display: swap;
+    src: url("/assets/fonts/Indie_Flower/IndieFlower-Regular.ttf");
+}
+
+:root{
+    /*     COLORS     */
+    --off-white: rgb(225, 225, 225);
+    --light-gray: rgb(48, 48, 48);
+    --dark-gray: rgb(32, 32, 32);
+    --darker-gray: rgb(21, 21, 21);
+    --green: hsl(115, 35%, 55%);
+    --yellow: hsl(50, 65%, 55%);
+    --red: hsl(0, 50%, 50%);
+    --black: hsl(240, 3%, 7%);
+    --backdrop-black: rgba(0, 0, 0, .5);
+
+    /*     FONTS     */
+    --font-inter: Inter, sans-serif;
+    --font-indie-flower: Indie-Flower, sans-serif;
+
+    /*     MISC     */
+    --header-h: 6.5rem;
+}
+
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+html{
+    font-size: 16px;
+}
+
+ul, li{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+a{
+    text-decoration: none;
+}
+
+h1{
+    font-family: var(--font-indie-flower);
+    font-size: 3rem;
+    letter-spacing: 3.5px;
+    font-weight: 600;
+}
+
+h2, h3{
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+    color: white;
+}
+
+h2, h3, p, a, span{
+    font-family: var(--font-inter);
+    color: white;
+}
+
+button{
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+button, input[type="submit"], input[type="input"] {
+	background: none;
+	color: inherit;
+	border: none;
+	padding: 0;
+	font: inherit;
+	cursor: pointer;
+	outline: inherit;
+}
+
+body{
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--light-gray);
+}
+
+#canvas{
+    background: var(--light-gray);
+}
+
+.indie{
+    font-family: var(--font-indie-flower);
+}
+
+.inter{
+    font-family: var(--font-inter);
+}
+
+.flex-cr{
+    display: flex;
+    flex-direction: row;
+}
+
+.px{
+    padding-inline: 2rem;
+}
+
+.py{
+    padding-block: 1rem;
+}
+
+.header{
+    min-height: 6.5rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid rgba(255, 255, 255, .25);
+}
+
+.header__title{
+    color: white;
+}
+
+.header__icon-info{
+    width: 2.5rem;
+    height: 2.5rem;
+    fill: white;
+}
+
+.header__button{
+    cursor: pointer;
+}
+
+.icon-info-path{
+    fill: white;
+}
+
+.content{
+    position: relative;
+    min-height: calc(100vh - var(--header-h));
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.content__moves{
+    display: block;
+    max-width: 43rem;
+    height: 5rem;
+    text-align: center;
+    align-content: center;
+}
+
+
+.content__game-grid{
+    max-width: 43rem;
+    height: auto;
+    display: grid;
+    grid-template-columns: repeat(7,4.5rem);
+    grid-template-rows: repeat(7, 4.5rem);
+    gap: .25rem;
+}
+
+.content__popup[open]{
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100%;
+    padding-inline: 1.5rem;
+    padding-block: 3rem 0rem;
+    background: var(--backdrop-black);
+}
+
+.content__popup:not([open]){
+    pointer-events: none;
+}
+
+
+.popup{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 36rem;
+    height: 80%;
+    padding: 2.25rem;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: .75rem;
+    background: var(--black);
+}
+
+.popup__header{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.popup__title{
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.popup__button-close{
+    width: 2rem;
+}
+
+.popup__icon-close{
+    height: auto;
+}
+
+.popup__section{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    line-height: 1.5;
+}
+
+.popup__rules-header{
+    font-size: 2rem;
+}
+
+.game-grid__tile{
+    height: 4.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid white;
+}
+
+.game__alert{
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 100vh;
+    z-index: 99;
+    background: var(--backdrop-black);
+}
+
+.game__screen{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    max-width: 32rem;
+    min-height: 28rem;
+    transform: scale(.8);
+    margin-inline: auto;
+    overflow: hidden;
+    transition: transform 200ms ease-in;
+}
+
+.game__vocab{
+    width: 100%;
+    padding: 2rem 2rem 0rem 2rem;
+    background: var(--light-gray);
+    border-radius: 8px;
+}
+
+.game__victory{
+    background: var(--light-gray);
+    padding: 4rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.game__category{
+    font-size: 1.75rem;
+}
+
+.game__definition{
+    padding-inline: 4rem;
+    margin-top: 1rem;
+    font-size: 1.25rem;
+}
+
+.game__quiz{
+    display: flex;
+    flex-direction: column;
+    color: white;
+    margin-block: 2rem;
+    gap: 2rem;
+    padding-inline: 2rem;
+}
+
+.game__prompt{
+    text-align: center;
+}
+
+.game__word{
+    border: 1px solid white;
+    border-radius: 2rem;
+    transition: background 200ms ease;
+}
+
+.question-input{
+    width: 100%;
+    height: 100%;
+    padding-inline: 1.5rem;
+    font-size: 2rem;
+    text-align: left;
+    color: white;
+    cursor: pointer;
+    background: none;
+}
+
+.game__word:hover {
+    background: white;
+}
+
+.game__word:hover .question-input{
+    color: black;
+}
+
+.game__submit{
+    width: 100%;
+    height: 0rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-family: var(--font-inter);
+    transition: margin 300ms linear, height 300ms linear;
+}
+
+.game__matching{
+    width: 100%;
+    height: auto;
+    padding: 2rem;
+    gap: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: var(--dark-gray);
+}
+
+.matching__dragend{
+    width: 100%;
+    height: 3rem;
+    margin-top: 1rem;
+    border-radius: 2rem;
+    background: var(--darker-gray);
+}
+
+.matching__dragend[data-droppable="true"][data-over="true"]{
+    background: var(--light-gray);
+}
+
+.matching__dragend[data-droppable="false"]{
+    height: auto;
+    width: max-content;
+    padding: .35rem;
+    background: rgb(69, 69, 69);
+}
+
+.matching__dropped{
+    width: max-content;
+    height: 100%;
+    padding-inline: 1.5rem;
+    font-size: 2rem;
+    text-align: left;
+    color: black;
+    border: 1px solid white;
+    border-radius: 2rem;
+    background: rgb(255, 255, 255);
+    font-family: var(--font-indie-flower);
+}
+
+.matching__list-item{
+    position: relative;
+    color: white;
+}
+
+.matching__list-def{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.matching__list-def .matching__list-item{
+    font-size: 1.25rem;
+}
+
+.matching__list-words{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.matching__list-words .matching__list-item{
+    cursor: grab;
+    border: 1px solid white;
+    border-radius: 2rem;
+    transition: background 200ms ease;
+    text-align: center;
+}
+
+.matching__list-words .matching__list-item:active{
+    cursor: grabbing !important;
+}
+
+.matching__list-words .matching__list-item:hover {
+    background: white;
+}
+
+.matching__list-words .matching__list-item:hover{
+    color: black;
+}
+
+.submit__button{
+    width: 8rem;
+    height: 2.75rem;
+    display: block;
+    text-align: center;
+    background: white;
+    color: black;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    font-weight: 500;
+    border-radius: 8px;
+}
+
+.submit__button:focus{
+    background: white;
+    color: black;
+}
+
+.submit__button:hover{
+    background: var(--off-white);
+}
+
+.dragging{
+    opacity: 1;
+    cursor: grabbing;
+}
+
+.dragging__clone{
+    text-align: center;
+    position: absolute;
+    cursor: grabbing !important;
+    pointer-events: none;
+    z-index: 9999;
+    background: var(--off-white);
+    color: black;
+    border-radius: 2rem;
+}
+
+.expand{
+    transform: scale(1);
+}
+
+.visited{
+    background: var(--green) !important;
+    border: 1px solid black;
+    pointer-events: none;
+}
+
+.inactive{
+    background: var(--black);
+    pointer-events: none;
+}
+
+.moveable{
+    background: var(--yellow);
+}
+
+.exit{
+    box-shadow: 0px 0px 12px 0px rgba(255,240,69,1);
+}
+
+.focused{
+    background: white;
+    color: black;
+}
+
+.correct{
+    background: var(--green);
+}
+
+.wrong{
+    background: var(--red);
+}
+
+/* 
+
+ANIMATION CLASSES 
+
+*/
+
+.animate-fadein{
+    animation: fadein 300ms;
+}
+
+.animate-fadeout{
+    animation: fadeout 300ms;
+}
+
+.animate-glow{
+    animation: glow ease-in-out 2s infinite alternate;
+}
+
+.animate-slidedown{
+    animation: slidedown 300ms;
+}
+
+.animate-slideup{
+    animation: slideup 300ms;
+}
+
+.game-grid__tile[data-animation="popout"]{
+    animation: popout 100ms ease-in-out;
+}
+
+
+@keyframes flipin{
+    from{
+        transform: rotateX(0);
+    }
+    to{
+        transform: rotateX(-90deg);
+    }
+}
+
+@keyframes flipout{
+    from{
+        transform: rotateX(-90deg);
+    }
+    to{
+        transform: rotateX(0);
+    }
+}
+
+@keyframes glow{
+    from{
+        box-shadow: 0px 0px 10px -3px rgba(255,240,69,.8);
+    }
+    to{
+        box-shadow: 0px 0px 10px 2px rgba(255,240,69,.9);
+    }
+    
+}
+
+@keyframes popout{
+    from{
+        transform: scale(.8);
+    }
+    to{
+        transform: scale(1.1);
+    }
+}
+
+@keyframes slideup{
+    from{
+        transform: translateY(10vh);
+        opacity: 0;
+    }   
+
+    to {
+        transform: translateY(0vh);
+        opacity: 1;
+    }
+}
+
+@keyframes slidedown{
+    from{
+        transform: translateY(0vh);
+        opacity: 1;
+    }
+
+    to{
+        transform: translateY(10vh);
+        opacity: 0;
+    }
+}
+
+@keyframes fadein{
+    from{
+        background-color: rgba(0, 0, 0, 0);
+    }
+
+    to{
+        background-color: rgba(0, 0, 0, .5);
+    }
+}
+
+@keyframes fadeout{
+    from{
+        background-color: rgba(0, 0, 0, .5);
+    }
+
+    to{
+        background-color: rgba(0, 0, 0, 0);
+    }
+}
+
+
+
+

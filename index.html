@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="./css/styles.css">
+        <title>Word Game</title>
+    </head>
+    <body>
+        <header class="header px py ">
+            <h1 class="header__title">
+                jamble
+            </h1>
+            <div class="header__menu">
+                <button class="header__button" id="btn-help">
+                    <svg class="header__icon-info" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
+                        <path class="icon-info-path" fill="#000" fill-rule="evenodd" d="M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm-9 7a9 9 0 1 1 18 0 9 9 0 0 1-18 0zm8-4a1 1 0 0 1 1-1h.01a1 1 0 1 1 0 2H10a1 1 0 0 1-1-1zm.01 8a1 1 0 1 0 2 0V9a1 1 0 1 0-2 0v5z"/>
+                    </svg>
+                </button>
+            </div>
+            
+        </header>
+        <main class="content">
+            
+            <div class="content__game-grid">
+                
+            </div>
+
+            <dialog class="content__popup">
+                <div class="popup">
+                    <header class="popup__header">
+                        <h3 class="popup__title">
+                            How To Play
+                        </h3>
+                        <button class="popup__button-close" id="btn-close">
+                            <svg class="popup__icon-close" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="m18 18-6-6m0 0L6 6m6 6 6-6m-6 6-6 6" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </header>
+                    
+                    <section class="popup__section">
+                        
+                        <p class="popup__rules-info">
+                            Welcome to jamble, the fun and challenging vocabulary puzzle game!
+                            This game will challenge your problem-solving skills as well as your 
+                            lexical proficieny. 
+                        </p>
+                    </section>
+                </div>
+            </dialog>
+        </main>
+        <script type="module" src="./js/index.js"></script>
+    </body>
+</html>
