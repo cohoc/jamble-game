@@ -296,7 +296,7 @@ function gameType(row, col){
                             element.classList.add("expand");
                         }, 0)
         
-                        checkAnswer(game, tile.vocab.word)
+                        checkVocab(game, tile.vocab.word)
                         break;
                         
                     case 2:
@@ -311,7 +311,7 @@ function gameType(row, col){
                         }, 0)
 
                         dragHandler(game);
-
+                        checkMatching(game)
                         break;
 
                     case 3: 
@@ -442,15 +442,22 @@ function gameMatching(){
                         ${
                             shuffleword.map(word => 
                                 `<li class="matching__list-item question-input indie"
-                                    draggable="true"
+                                    data-draggable="true"
                                     data-value="${word}"
                                 >
                                     ${word}                                  
                                 </li>`
                             ).join('')
                         }
+
+                        <
                     </ul>
 
+                    <div class="game__submit">
+                        <button class="submit__button" type="submit">
+                            Submit
+                        </button>
+                    </div>
                 </section>  
             </div>
         </section>
@@ -469,7 +476,7 @@ function gameTyping(){
     return (html);
 }
 
-function checkAnswer(game, word){
+function checkVocab(game, word){
     let timer = 0;
     let selection;
     let submit = document.querySelector(".game__submit");
@@ -489,6 +496,16 @@ function checkAnswer(game, word){
 
 function submitAnswer(event, word, selection, game){
     event.preventDefault();
+    let gameType = null;
+    switch(gameType){
+        case "vocab":
+            break;
+        case "matching":
+            break;
+
+        case "typing":
+            break;
+    }
     let choice = document.querySelector(`[data-value='${selection}']`)
     if(word === selection){
         choice.parentNode.classList.add("correct")
@@ -529,38 +546,41 @@ function closeDialog(){
 }
 
 function dragHandler(game){
-    let invisible = null;
     let cloned = null;
     let containerRect = null;
+    let dataval = null;
+    let currentDrop = null;
+    let isDragging = false;
+    let isMouseDown = false;
+
     let minX, minY, maxX, maxY = 0;
-    let startX = 0;
-    let startY = 0;
+    let startX, startY = 0;
 
     game.addEventListener("dragstart", event => {
+        event.preventDefault()
+    })
+
+    game.addEventListener("mousedown", event => {
         
-        if(event.target.hasAttribute("draggable")){   
+        if(event.target.dataset.draggable === "true"){   
+            isDragging = true;
+            isMouseDown = true;
             document.body.style.overflow = "hidden"
+            document.body.style.cursor = "grabbing"
+
+            // Get size of game screen to calc bounds of drag
             containerRect = game.getBoundingClientRect();
             minX = containerRect.left;
-            minY = containerRect.bottom;
             maxX = containerRect.right;
+            minY = containerRect.bottom;
             maxY = containerRect.top;
-            game.style.cursor = "grabbing !important"
-            //console.log(containerRect)
-            //console.log("minX: ", minX, " maxX: ", maxX, " minY: ", minY, " maxY: ", maxY);
 
+            // Get size of drag element to calc clone drag offset
             const rect = event.target.getBoundingClientRect();
             startX = event.clientX - rect.left;
             startY = event.clientY - rect.top;
 
-            invisible = document.createElement("div")
-            invisible.style.width = `1px`
-            invisible.style.height = `1px`
-            invisible.style.opacity = "0"
-            invisible.style.visibility = "hidden"
-            invisible.style.cursor = "grabbing !important"
-            document.body.appendChild(invisible);
-
+            
             cloned = event.target.cloneNode(true);
             cloned.style.left = `${event.clientX - startX}px`;
             cloned.style.top = `${event.clientY - startY}px`;
@@ -569,81 +589,97 @@ function dragHandler(game){
             cloned.classList.add("dragging__clone")
             document.body.appendChild(cloned)
 
-            const value = event.target.dataset.value;
-            event.dataTransfer.setData("text/plain", value);
-            event.dataTransfer.setDragImage(invisible, 0, 0);
+            dataval = event.target.dataset.value;
 
             event.target.style.zIndex = "9998"
-            console.log(event.dataTransfer)
+            event.target.style.display = "none"
+
+            game.style.userSelect = "none"
         }
     })
 
-    game.addEventListener("drag", event => {
+    game.addEventListener("mousemove", event => {
         
-        if(cloned){
+        if(isDragging && cloned){
             let newX = event.clientX - startX;
             let newY = event.clientY - startY;
 
-            newX = Math.max(minX, Math.min(newX, maxX))
-            newY = Math.min(minY, Math.max(newY, maxY))
+            newX = Math.max(minX, Math.min(maxX - cloned.offsetWidth, newX))
+            newY = Math.max(maxY, Math.min(minY - cloned.offsetHeight, newY))
 
             //console.log("X: ", newX, " Y: ", newY)
             cloned.style.left = `${newX}px`
             cloned.style.top = `${newY}px`
+
+            let element = document.elementFromPoint(event.clientX, event.clientY);
+            let droppable = element?.closest("[data-droppable='true']")
+            dragHighlight(droppable);
         }
     })
 
-    game.addEventListener("dragenter", event => {
-        if(event.target.matches('.matching__dragend[data-droppable="true"]')){
-            event.target.setAttribute("data-over", "true");
+    game.addEventListener("mouseup", event => {
+
+        if(isDragging && cloned){
+            const droppable = event.target.closest("[data-droppable='true']")
+            const dragged = game.querySelector(`[data-value="${dataval}"]`)
+            if(droppable){            
+                // Create and append div placeholder to draggable
+                const div = document.createElement("div");
+                div.textContent = dragged.textContent;
+                div.className = "matching__dropped";
+                div.dataset.value = dragged.dataset.value;
+                droppable.appendChild(div);
+    
+                // Edit the initial dragged element so it is omitted from the list 
+                dragged.style.display = "none";
+                dragged.dataset.draggable = "false"
+    
+                // Edit the draggable so that no other elements can be dragged in
+                droppable.setAttribute("data-droppable", false);
+                dragHighlight(null)
+
+            }
+            else if(!droppable){
+                dragged.style.display = "";
+            }
+            dragCleanUp();
         }
     })
 
-    game.addEventListener("dragleave", event => {
-        if(event.target.matches('.matching__dragend[data-droppable="true"]')){
-            event.target.removeAttribute("data-over");
-        }
+    game.addEventListener("mouseleave", () => {
+        if(isDragging){
+            let element = game.querySelector(`[data-value="${dataval}"]`);
+            element.style.display = "";
+            dragCleanUp();
+            dragHighlight(null);
+        } 
     })
 
-    game.addEventListener("dragend", () => {
+    function dragCleanUp(){
+
         if(cloned){
-            document.body.removeChild(cloned)
+            document.body.removeChild(cloned);
             cloned = null;
         }
-        if(invisible){
-            document.body.removeChild(invisible)    
-            invisible = null;
+
+        dataval = null;
+        isDragging = false;
+        isMouseDown = false;
+        document.body.style.overflow = "";
+        document.body.style.cursor = ""
+        game.style.userSelect = ""
+
+    }
+
+    function dragHighlight(droppable){
+        if(currentDrop){
+            currentDrop.classList.remove("drag-highlight")
         }
-        document.body.style.overflow = ""
-    })
-
-    game.addEventListener("dragover", event => {
-        event.preventDefault();
-    })
-
-    game.addEventListener("drop", event => {
-        event.preventDefault()
-        const droppable = event.target.closest("[data-droppable='true']")
-        const value = event.dataTransfer.getData("text/plain")
-        const dragged = game.querySelector(`[data-value="${value}"]`)
-        if(event.target.matches('.matching__dragend[data-droppable="true"]')){            
-            // Create and append div placeholder to draggable
-            const div = document.createElement("div");
-            div.textContent = dragged.textContent;
-            div.className = "matching__dropped";
-            div.dataset.value = dragged.dataset.value;
-            droppable.appendChild(div);
-
-            // Edit the initial dragged element so it is omitted from the list 
-            dragged.style.display = "none";
-
-            // Edit the draggable so that no other elements can be dragged in
-            droppable.setAttribute("data-droppable", false);
+        if(droppable){
+            droppable.classList.add("drag-highlight")
         }
-
-    })
-
-
+        currentDrop = droppable;
+    }
 }
 
 function drawCounter(){

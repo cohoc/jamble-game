@@ -358,6 +358,7 @@ body{
     margin-top: 1rem;
     border-radius: 2rem;
     background: var(--darker-gray);
+    transition: background 200ms ease;
 }
 
 .matching__dragend[data-droppable="true"][data-over="true"]{
@@ -461,6 +462,10 @@ body{
     background: var(--off-white);
     color: black;
     border-radius: 2rem;
+}
+
+.drag-highlight{
+    background: var(--light-gray);
 }
 
 .expand{
