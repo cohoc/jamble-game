@@ -282,12 +282,12 @@ function gameType(row, col){
                 break;
 
             case "wordevent":
-                //let randomgame = Math.floor(Math.random() * 3) + 1;
-                let randomgame = 2;
+                let randomgame = Math.floor(Math.random() * 3) + 1;
+                //let randomgame = 2;
                 switch(randomgame){
 
                     case 1:
-                        console.log("reached multiple choice quiz")
+
                         grid.insertAdjacentHTML("afterend", gameVocab(tile.vocab));
                         game = document.querySelector(".game__vocab");
 
@@ -300,9 +300,13 @@ function gameType(row, col){
                         break;
                         
                     case 2:
-                        console.log("reached matching quiz")
 
-                        grid.insertAdjacentHTML("afterend", gameMatching());
+                        let array = Array.from(getMatching());
+                        let correct = Object.fromEntries(array.map(item => [item.word, item.definition]));
+                        let shuffleword = array.map(item => item.word).sort(() => Math.random() - .5);
+                        let shuffledef = array.map(item => item.definition).sort(() => Math.random() - .5);
+
+                        grid.insertAdjacentHTML("afterend", gameMatching(shuffledef, shuffleword));
                         game = document.querySelector(".game__matching");
 
                         setTimeout(() => {
@@ -311,7 +315,7 @@ function gameType(row, col){
                         }, 0)
 
                         dragHandler(game);
-                        checkMatching(game)
+                        checkMatching(game, correct);
                         break;
 
                     case 3: 
@@ -411,13 +415,8 @@ function gameVocab(vocab){
     return (html);
 }
 
-function gameMatching(){
-    let array = Array.from(getMatching());
-    let correct = Object.fromEntries(array.map(item => [item.word, item.definition]));
-    let shuffleword = array.map(item => item.word).sort(() => Math.random() - .5);
-    let shuffledef = array.map(item => item.definition).sort(() => Math.random() - .5);
-    //console.log(shuffleword)
-    //console.log(correct);
+function gameMatching(shuffledef, shuffleword){
+
     let html = `
         <section class="game__alert">
             <div class="game__screen">
@@ -427,7 +426,8 @@ function gameMatching(){
                             shuffledef.map((def, index) => 
                                 `<li class="matching__list-item inter">
                                     <p>
-                                        ${index + 1}. ${def}                                
+                                        <span>${index + 1}. </span>
+                                        ${def}                                
                                     </p>
                                     <div class="matching__dragend"
                                         data-droppable="true"
@@ -449,12 +449,13 @@ function gameMatching(){
                                 </li>`
                             ).join('')
                         }
-
-                        <
                     </ul>
 
                     <div class="game__submit">
-                        <button class="submit__button" type="submit">
+                        <button class="clear__button button--game button--matching" type="button">
+                            Clear
+                        </button>
+                        <button class="submit__button button--game button--matching" type="submit">
                             Submit
                         </button>
                     </div>
@@ -494,6 +495,87 @@ function checkVocab(game, word){
     },)
 }
 
+function checkMatching(game, correct){
+    let matching = {};
+    let submit = game.querySelector(".game__submit");
+    let submitbutton = submit.lastElementChild;
+    game.addEventListener("mouseup", event => {
+
+        if(event.target.dataset.droppable === "false" && event.target.firstElementChild && Object.keys(matching).length < 4){
+            // Get the definition of the dropped item
+            let ptag = event.target.previousElementSibling;
+            let span = ptag.querySelector("span").textContent;
+            let definition = ptag.textContent.replace(span, "").trim();
+
+            // Get the word from the element that was dropped in
+            let dropped = event.target.children[0];
+            let word = dropped.dataset.value;
+
+            matching[word] = definition;
+
+            if(Object.keys(matching).length < 4){
+                submit.style.height = "3rem";
+                submit.style.marginTop = "2rem"
+                submitbutton.style.display = "none"
+            }
+    
+            else{
+                submitbutton.style.display = "block"
+            }
+        }  
+    })
+
+    game.addEventListener("click", event => {
+        if(event.target.tagName === "BUTTON" && event.target.type === "submit"){
+            event.preventDefault();
+            let isMatch;
+            Object.entries(matching).forEach(item => {
+                let itemkey = item[0];
+                let itemdef = item[1];
+                let element = game.querySelector(`.matching__dropped[data-value='${itemkey}']`)
+                isMatch = (itemdef === correct[itemkey]);
+                
+                if(isMatch === true){
+                    element.classList.add("correct")
+                    element.style.color = "white"
+                }
+                else if(isMatch === false){
+                    element.classList.add("wrong")
+                    element.style.color = "white";
+                }
+            })
+
+            setTimeout(() => {
+                game.remove();
+                document.querySelector(".game__alert").remove();
+            }, 1000)
+        }
+
+        else if(event.target.tagName === "BUTTON" && event.target.classList.contains("clear__button")){
+            
+            let words = game.querySelectorAll("[data-draggable='false']");
+            words.forEach(element => {
+                // Reset words list so that items can be dragged again
+                element.style.display = ""
+                element.style.zIndex = ""
+                element.dataset.draggable = "true"
+                let value = element.dataset.value;
+
+                // Clear elements in draggables that have been dragged
+                let drop = game.querySelector(`.matching__dropped[data-value='${value}']`)
+                let dropend = drop.parentElement;
+                drop.remove();
+                dropend.dataset.droppable = "true";
+
+                // Remove elements from matching object 
+                matching = {}
+                submit.style.height = "0rem";
+                submit.style.marginTop = "0rem"
+            })
+        }
+    })
+}
+
 function submitAnswer(event, word, selection, game){
     event.preventDefault();
     let gameType = null;
@@ -502,7 +584,6 @@ function submitAnswer(event, word, selection, game){
             break;
         case "matching":
             break;
-
         case "typing":
             break;
     }
@@ -641,6 +722,7 @@ function dragHandler(game){
             }
             else if(!droppable){
                 dragged.style.display = "";
+
             }
             dragCleanUp();
         }
