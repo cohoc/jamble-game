@@ -428,6 +428,17 @@ body{
     color: black;
 }
 
+.game__typing{
+    width: 100%;
+    height: auto;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: var(--dark-gray);
+}
+
 .submit__button{
     width: 8rem;
     height: 2.75rem;

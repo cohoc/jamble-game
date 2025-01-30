@@ -1,6 +1,6 @@
 import { element, max } from "three/tsl";
 import { words } from "../backend/data/words"
-import { getWords, getRandomWords, getMatching } from "./getWords";
+import { getWords, getRandomWords, getMatching } from "./utils/getWords";
 
 let maze = new Array();
 let deathpit;
@@ -320,6 +320,8 @@ function gameType(row, col){
 
                     case 3: 
                         console.log("reached word fill quiz")
+                        grid.insertAdjacentHTML("afterend", gameTyping());
+                            
                         break;    
                 }
 
@@ -420,7 +422,7 @@ function gameMatching(shuffledef, shuffleword){
     let html = `
         <section class="game__alert">
             <div class="game__screen">
-                <section class="game__matching" data-game="matching-game">
+                <section class="game__matching" data-game="matching">
                     <ul class="matching__list-def">
                         ${
                             shuffledef.map((def, index) => 
@@ -470,7 +472,16 @@ function gameTyping(){
     let html = `
         <section class="game__alert">
             <div class="game__screen">
-                
+                <section class="game__typing" data-game="typing">
+                    <div class="game__typing-definition">
+                    
+                    </div>
+                    <input 
+                        class="game__typing-input"
+                        type="text">
+                    
+                    </input>
+                </section
             </div>
         </section>
     `

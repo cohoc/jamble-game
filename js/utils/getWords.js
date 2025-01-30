@@ -1,5 +1,4 @@
-import { words } from "../backend/data/words";
-
+import { words } from "../../backend/data/words";
 const wordset = new Set();
 
 export const getWords = () => {
