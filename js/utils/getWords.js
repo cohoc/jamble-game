@@ -27,3 +27,12 @@ export const getMatching = () => {
     }
     return randomset;
 }
+
+export const getTyping = () => {
+    let randomset = new Set();
+    while(randomset.size < 50){
+        let index = Math.floor(Math.random() * words.length);
+        randomset.add(words[index]);
+    }
+    return randomset;
+}

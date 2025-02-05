@@ -1077,7 +1077,7 @@ export const words = [
     {
         "word": "ambiguous",
         "type": "adjective",
-        "definition": "Having more than one possible meaning, making something unclear or open to interpretation.."
+        "definition": "Having more than one possible meaning, making something unclear or open to interpretation."
     },
     {
         "word": "ambitious",

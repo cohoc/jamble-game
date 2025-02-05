@@ -13,6 +13,7 @@
 :root{
     /*     COLORS     */
     --off-white: rgb(225, 225, 225);
+    --lighter-gray: rgb(64, 64, 64);
     --light-gray: rgb(48, 48, 48);
     --dark-gray: rgb(32, 32, 32);
     --darker-gray: rgb(21, 21, 21);
@@ -244,9 +245,9 @@ body{
 
 .game__alert{
     position: fixed;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
+    align-content: center;
+    justify-items: center;
     top: 0;
     left: 0;
     width: 100%;
@@ -257,10 +258,12 @@ body{
 
 .game__screen{
     position: relative;
-    display: flex;
-    flex-direction: column;
-    max-width: 32rem;
-    min-height: 28rem;
+    display: block;
+    align-content: center;
+    justify-items: center;
+    width: 100vw;
+    min-height: 75vh;
+    padding: 2rem;
     transform: scale(.8);
     margin-inline: auto;
     overflow: hidden;
@@ -268,7 +271,7 @@ body{
 }
 
 .game__vocab{
-    width: 100%;
+    max-width: 38rem;
     padding: 2rem 2rem 0rem 2rem;
     background: var(--light-gray);
     border-radius: 8px;
@@ -342,7 +345,7 @@ body{
 }
 
 .game__matching{
-    width: 100%;
+    max-width: 42rem;
     height: auto;
     padding: 2rem;
     display: flex;
@@ -429,14 +432,53 @@ body{
 }
 
 .game__typing{
-    width: 100%;
-    height: auto;
-    padding: 2rem;
+    position: relative;
+    width: clamp(16rem, 100vw, 46rem);
+    min-height: 75vh;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
     background: var(--dark-gray);
+}
+
+.game__typing-definition{
+    display: block;
+    align-content: center;
+    justify-items: center;
+    text-align: center;
+    flex: 1 1 35vh;
+    width: 100%;
+    font-size: 4rem;
+    padding: 3rem;
+}
+
+.game__typing-definition b{
+    font-size: 3rem;
+}
+
+.game__typing-word{
+    width: 100%;
+    flex: 1 1 35vh;
+    padding-inline: 2rem;
+    font-size: 4rem;
+    border-top: 1px solid rgba(184, 184, 184, 0.25);
+    align-content: center;
+    justify-items: center;
+}
+
+.typing-input[type="text"]{
+    display: block;
+    width: 100%;
+    height: 100%;
+    font-size: 4rem;
+    text-align: center;
+    background: none;
+    color: white;
+}
+
+.typing-input[type="text"]:focus{
+    outline: none;
 }
 
 .submit__button{
@@ -546,6 +588,19 @@ body{
 
 .button--matching{
     border-radius: 0px;
+}
+
+.typing--responsive{
+    font-size: clamp(2rem, 7vw, 3rem);
+}
+
+.timer-container{
+    position: relative;
+    display: block;
+    align-content: center;
+    justify-items: center;
+    width: 100%;
+    height: 1px;
 }
 
 /* 

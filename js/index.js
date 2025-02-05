@@ -1,6 +1,7 @@
 import { element, max } from "three/tsl";
 import { words } from "../backend/data/words"
-import { getWords, getRandomWords, getMatching } from "./utils/getWords";
+import { getWords, getRandomWords, getMatching, getTyping } from "./utils/getWords";
+import Timer from "./utils/timer";
 
 let maze = new Array();
 let deathpit;
@@ -270,6 +271,7 @@ function gameType(row, col){
     let tile = maze[row][col];
     let element;
     let game;
+    let timerElement;
 
     if(tile.exit === true){
         grid.insertAdjacentHTML("afterend", gameVictory());
@@ -282,12 +284,11 @@ function gameType(row, col){
                 break;
 
             case "wordevent":
-                let randomgame = Math.floor(Math.random() * 3) + 1;
-                //let randomgame = 2;
+                //let randomgame = Math.floor(Math.random() * 3) + 1;
+                let randomgame = 3;
                 switch(randomgame){
 
                     case 1:
-
                         grid.insertAdjacentHTML("afterend", gameVocab(tile.vocab));
                         game = document.querySelector(".game__vocab");
 
@@ -299,8 +300,7 @@ function gameType(row, col){
                         checkVocab(game, tile.vocab.word)
                         break;
                         
-                    case 2:
-
+                    case 2: {
                         let array = Array.from(getMatching());
                         let correct = Object.fromEntries(array.map(item => [item.word, item.definition]));
                         let shuffleword = array.map(item => item.word).sort(() => Math.random() - .5);
@@ -317,12 +317,35 @@ function gameType(row, col){
                         dragHandler(game);
                         checkMatching(game, correct);
                         break;
+                    }
 
-                    case 3: 
-                        console.log("reached word fill quiz")
-                        grid.insertAdjacentHTML("afterend", gameTyping());
-                            
-                        break;    
+                    case 3: {
+                        let array = Array.from(getTyping())
+                        let randindex = Math.floor(Math.random() * array.length); 
+                        let randword = array[randindex].word;
+                        let randtype = array[randindex].type;
+                        let randdef = array[randindex].definition;
+                        console.log(randword)
+
+
+                        grid.insertAdjacentHTML("afterend", gameTyping(randword, randtype, randdef));
+                        game = document.querySelector(".game__typing")
+                        document.querySelector(".typing-input").focus();
+                        timerElement = document.querySelector(".timer-container");
+                        console.log(timerElement);
+
+                        setTimeout(() => {
+                            element = document.querySelector(".game__screen");
+                            element.classList.add("expand");
+                        }, 0)
+
+                        const timer = new Timer(60000, 1000, timerElement)
+                        timer.start();
+
+                        checkTyping(game, randword);
+                        break;  
+                    }
+                          
                 }
 
             default:
@@ -468,19 +491,36 @@ function gameMatching(shuffledef, shuffleword){
     return (html);
 }
 
-function gameTyping(){
+function gameTyping(randword, randtype, randdef){
+  
     let html = `
         <section class="game__alert">
             <div class="game__screen">
                 <section class="game__typing" data-game="typing">
-                    <div class="game__typing-definition">
+                    <div class="game__typing-definition ">
+                        <p class="indie typing--responsive">
+                            <b class="inter">
+                                ${randtype}.
+                            </b>
+                            ${randdef}
+                        </p>
+                    </div>
+
+                    <div class="timer-container" class="inter">
                     
                     </div>
-                    <input 
-                        class="game__typing-input"
-                        type="text">
+
+                    <div class="game__typing-word">
+                        <input 
+                            class="typing-input inter typing--responsive"
+                            type="text"
+                            tabindex=1
+                            placeholder="Starts with ${randword.charAt(0)}"
+                            data-value=""
+                            >
                     
-                    </input>
+                        </input>
+                    </div>
                 </section
             </div>
         </section>
@@ -585,6 +625,37 @@ function checkMatching(game, correct){
             })
         }
     })
+}
+
+function checkTyping(game, word){
+    let correct = word;
+    let userword = "";
+    let textinput = game.querySelector(".typing-input")
+    textinput.addEventListener("keydown", event => {
+        //console.log(event);
+        let keyCode = event.keyCode;
+        if(keyCode >= 65 && keyCode <= 90){
+            userword += event.key;
+            textinput.dataset.value = userword;
+            console.log(userword)
+        }
+        if(event.key === "Backspace"){
+            userword = userword.substring(0, userword.length - 1);
+            textinput.dataset.value = userword
+            console.log(userword)
+        }
+
+    })
+
+    textinput.addEventListener("keyup", event => {
+        if(userword === correct){
+            console.log("you typed the correct word ...");
+            textinput.value = ""
+            textinput.dataset.value = ""
+            userword = ""
+        }
+    })
+
 }
 
 function submitAnswer(event, word, selection, game){
@@ -788,6 +859,16 @@ function drawCounter(){
     main.insertAdjacentHTML("afterbegin", html);
 }
 
+function setFocus(element){
+    let prevFocus = document.querySelector(".focused");
+    if(prevFocus){
+        prevFocus.classList.remove("focused")
+        prevFocus.firstElementChild.style.color = "white";
+    }
+    element.parentNode.classList.add("focused")
+    element.style.color = "black";
+}
+
 function updateCounter(){
     let element = document.getElementById("player-moves");
     player.moves = player.moves + 1;
@@ -800,16 +881,6 @@ function updateAnimation(row, col){
     element.addEventListener("animationend", (event) => {
         event.target.setAttribute("data-animation", "idle");
     })
-}
-
-function setFocus(element){
-    let prevFocus = document.querySelector(".focused");
-    if(prevFocus){
-        prevFocus.classList.remove("focused")
-        prevFocus.firstElementChild.style.color = "white";
-    }
-    element.parentNode.classList.add("focused")
-    element.style.color = "black";
 }
 
 function addEvents(){
