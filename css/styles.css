@@ -270,9 +270,10 @@ body{
     transition: transform 200ms ease-in;
 }
 
-.game__vocab{
+.game__quiz{
     max-width: 38rem;
-    padding: 2rem 2rem 0rem 2rem;
+    height: auto;
+    padding: 2rem 2rem .25rem 2rem;
     background: var(--light-gray);
     border-radius: 8px;
 }
@@ -285,7 +286,7 @@ body{
 }
 
 .game__category{
-    font-size: 1.75rem;
+    font-size: clamp(1.75rem, 6vw, 3rem);
 }
 
 .game__definition{
@@ -294,7 +295,7 @@ body{
     font-size: 1.25rem;
 }
 
-.game__quiz{
+.game__quiz-list{
     display: flex;
     flex-direction: column;
     color: white;
@@ -319,7 +320,7 @@ body{
     padding-inline: 1.5rem;
     font-size: 2rem;
     text-align: left;
-    color: white;
+    color: inherit;
     cursor: pointer;
     background: none;
 }
@@ -560,16 +561,19 @@ body{
 }
 
 .focused{
+    pointer-events: none;
     background: white;
     color: black;
 }
 
 .correct{
     background: var(--green);
+    color: white;
 }
 
 .wrong{
     background: var(--red);
+    color: white;
 }
 
 /*
@@ -591,16 +595,27 @@ body{
 }
 
 .typing--responsive{
-    font-size: clamp(2rem, 7vw, 3rem);
+    font-size: clamp(2rem, 6vw, 3rem);
 }
 
 .timer-container{
     position: relative;
     display: block;
     align-content: center;
-    justify-items: center;
+    justify-items: left;
     width: 100%;
     height: 1px;
+}
+
+.timer-progress{
+    display: block;
+    flex-grow: 1;
+    width: 100%;
+    height: 4px;
+    transition: transform 250ms ease;
+    background: var(--green);
+    transform: scaleX(0);
+    transform-origin: left;
 }
 
 /* 

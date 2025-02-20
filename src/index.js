@@ -1,14 +1,13 @@
 import { element, max } from "three/tsl";
 import { words } from "../backend/data/words"
 import { getWords, getRandomWords, getMatching, getTyping } from "./utils/getWords";
-import Timer from "./utils/timer";
+import Maze from "./maze/Maze";
+import Player from "./player/Player"
+import GameLogic from "./logic/GameLogic";
+import MiniGameRenderer from "./renderer/MiniGameRenderer";
+import MiniGameRegistry from "./renderer/MiniGameRegistry";
 
-let maze = new Array();
-let deathpit;
-let player;
-let movesleft = 11;
-//let events;
-let wordevent;
+let maze, player, logic, renderer, registry;
 
 let grid,
     dialog,
@@ -23,19 +22,16 @@ let grid,
     btnhelp = document.getElementById("btn-help");
 
 function init(){
-    //create maze and fill with events 
-    createMaze(Array.from(getWords()));
+    maze = new Maze(7, 7);
+    player = new Player();
+    registry = new MiniGameRegistry();
+    
+    renderer = new MiniGameRenderer(registry);
+    logic = new GameLogic(maze, player, renderer);
+
     drawMaze();
-
-    //create exit in maze
-    createExit();
     drawExit();
-
-    createPlayer();
-    createEvents();
-
-    drawCounter();
-    //console.log(getRandomWeighted(events));
+    console.log(maze.grid)
 }
 
 
@@ -48,104 +44,15 @@ function init(){
 *
 *
 ********************/
-function createMaze(array){
-    let currentIndex = 0;
-    for(let i = 0; i < 7; i++){
-        maze[i] = [];
-        for(let j = 0; j < 7; j++){
-            let event = getRandomWeighted(createEvents());
-
-            let word = words[array[currentIndex]];
-            maze[i][j] = {
-                active: false,
-                visited: false,
-                viewable: false,
-                moveable: (i === 0 ? true: false),
-                exit: false,
-                event: event,
-                vocab: word,
-            }
-            currentIndex++;
-        }
-    }
-}
-
-function createExit(){
-    let index = Math.floor(Math.random() * 7)
-    let element = grid.querySelector(`[data-row='${6}'][data-col='${index}']`)
-    maze[6][index].exit = true;
-
-    /* FOR TESTING */
-    maze[6][index].moveable = true;
-    element.classList.remove("inactive")
-    element.setAttribute('data-exit', true);
-}
-
-function checkExit(row, col){
-    if(maze[row][col].exit === true){
-        console.log("you found the exit!")
-    }
-}
-
-function createPlayer(){
-    player = {
-        moves: 0,
-        position: {
-            x: null,
-            y: null
-        },
-        preview: {
-            x: 0,
-            y: 3
-        },
-        direction: null,
-        bounds: {
-            xw: null,
-            xe: null,
-            yn: null,
-            ys: null
-        }
-    }
-}
-
-function createEvents(){
-    let events = [
-        {type: "wordevent", chance: 75},
-        {type: "none", chance: 10},
-        {type: "gold", chance: 10},
-        {type: "treasure", chance: 5},
-    ]
-    return events;
-}
-
-function createTreasure(){
-    treasure = [
-        {type: "swordmulti", chance: 10},
-        {type: "tilelens", chance: 50},
-        {type: "timepotion", chance: 50},
-        {type: "revealer", chance: 50},
-        {type: "swordmulti", chance: 50}
-    ]
-}
-
-function wordEvents(){
-    wordevent = [
-        {type: "easy", chance: 40},
-        {type: "novice", chance: 30},
-        {type: "normal", chance: 15},
-        {type: "hard", chance: 10},
-        {type: "impossible", chance: 5}
-    ]
-}
-
 
 async function drawMaze(){ 
-    maze.forEach((array, i) => {
+    maze.grid.forEach((array, i) => {
         array.forEach((item, j) => {
             let html = `
                 <button 
                     data-row=${i} 
                     data-col=${j} 
+                    ${logic.getMazeTile(i,j).type === "exit" ? "data-exit=true" : ""}
                     data-state=""
                     data-animation="idle"
                     class="${item.moveable === false ? "inactive" : ""} game-grid__tile"
@@ -157,70 +64,11 @@ async function drawMaze(){
     });
 }
 
+
 function drawExit(){
     let element = grid.querySelector(`[data-exit=${true}]`)
     element.classList.add("animate-glow");
 }
-
-
-function checkTile(element){
-    //if player has selected a tile
-    if(!Object.values(player.position).every(x => x == null)){
-        //set position of hovered tile
-        let row = element.getAttribute("data-row")
-        let col = element.getAttribute("data-col")
-        let pos = [parseInt(row), parseInt(col)];
-        //if the hovered tile is within the player bounds of movement ie. one tile north, east, south, west of current position
-        if(Object.values(player.bounds).some( coord =>JSON.stringify(coord) === JSON.stringify(pos))){
-            maze[i][j].moveable === true;
-            element.classList.add("moveable")
-        }  
-        else{
-            maze[i][j].moveable === false;
-            element.classList.remove("moveable")
-        }
-    }
-}
-
-function setMoveable(){
-    Object.values(player.bounds).forEach(bound => {
-        let x = bound[0];
-        let y = bound[1];
-        maze[x, y].moveable = true;
-        let element = document.querySelector(`[data-row='${x}'][data-col='${y}']`)
-        if(element.classList.contains("inactive")){
-            element.classList.remove("inactive")
-        }
-    })
-}
-
-function updateTiles(){
-    for(let i = 0; i < maze.length; i++){
-        for(let j = 0; j < maze.length; j++){
-            let element = document.querySelector(`[data-row='${i}'][data-col='${j}']`)
-            if((Object.values(player.bounds).some(coord => coord[0] === i && coord[1] === j)) || (player.position.x === i && player.position.y === j)){
-                continue;
-            }
-            else{
-                element.classList.add("inactive")
-            }
-        }
-    }
-}
-
-function getRandomWeighted(items){
-    let weight = items.reduce((sum, item) =>  sum + item.chance , 0);
-    let random = Math.random() * weight;
-    let cumulative = 0;
-    for(let item of items){
-        cumulative += item.chance;
-        if(random <= cumulative){
-            return item.type;
-        }
-    }
-    
-}
-
 
 /*******************  
 *
@@ -231,20 +79,12 @@ function getRandomWeighted(items){
 *
 *
 ********************/
-function setBounds(row, col){
-    player.bounds.xw = [parseInt(row), Math.max(0, parseInt(col) - 1)];
-    player.bounds.xe = [parseInt(row), Math.min(maze.length - 1, parseInt(col) + 1)];
-    player.bounds.yn = [Math.max(0, parseInt(row) - 1), parseInt(col)];
-    player.bounds.ys = [Math.min(maze.length - 1, parseInt(row) + 1), parseInt(col)];
-}
-    
-
 
 function setPreview(element, eventtype){
-    let row = element.getAttribute("data-row")
-    let col = element.getAttribute("data-col")
-    player.preview = [parseInt(row), parseInt(col)];
-    if(Object.values(player.bounds).some(coord => JSON.stringify(coord) === JSON.stringify(player.preview)) || (maze[row][col].moveable === true )){
+    let x = element.getAttribute("data-row")
+    let y = element.getAttribute("data-col")
+    player.preview = [parseInt(x), parseInt(y)];
+    if(Object.values(player.bounds).some(coord => JSON.stringify(coord) === JSON.stringify(player.preview)) || (maze.getTile(x, y).moveable === true )){
         if(eventtype === "mouseover"){
             element.classList.add("moveable")
         }
@@ -267,7 +107,7 @@ function setPreview(element, eventtype){
 
 
 
-function gameType(row, col){
+/*function gameType(row, col){
     let tile = maze[row][col];
     let element;
     let game;
@@ -341,6 +181,9 @@ function gameType(row, col){
 
                         const timer = new Timer(60000, 1000, timerElement)
                         timer.start();
+                        if(timer.currentTime === 0){
+                            console.log("timer has reached zero game over ...")
+                        }
 
                         checkTyping(game, randword);
                         break;  
@@ -516,7 +359,7 @@ function gameTyping(randword, randtype, randdef){
                             type="text"
                             tabindex=1
                             placeholder="Starts with ${randword.charAt(0)}"
-                            data-value=""
+                            value=""
                             >
                     
                         </input>
@@ -629,33 +472,16 @@ function checkMatching(game, correct){
 
 function checkTyping(game, word){
     let correct = word;
-    let userword = "";
     let textinput = game.querySelector(".typing-input")
-    textinput.addEventListener("keydown", event => {
-        //console.log(event);
-        let keyCode = event.keyCode;
-        if(keyCode >= 65 && keyCode <= 90){
-            userword += event.key;
-            textinput.dataset.value = userword;
-            console.log(userword)
-        }
-        if(event.key === "Backspace"){
-            userword = userword.substring(0, userword.length - 1);
-            textinput.dataset.value = userword
-            console.log(userword)
-        }
 
-    })
-
-    textinput.addEventListener("keyup", event => {
-        if(userword === correct){
-            console.log("you typed the correct word ...");
+    textinput.addEventListener("input", () => {
+        let currentword = textinput.value;
+        textinput.setAttribute("value", currentword)
+        //console.log(currentword)
+        if(currentword === correct){
             textinput.value = ""
-            textinput.dataset.value = ""
-            userword = ""
-        }
+        }    
     })
-
 }
 
 function submitAnswer(event, word, selection, game){
@@ -684,6 +510,8 @@ function submitAnswer(event, word, selection, game){
     }, 1000)
 }
 
+*/
+
 /*******************  
 *
 *
@@ -693,6 +521,7 @@ function submitAnswer(event, word, selection, game){
 *
 *
 ********************/
+
 
 function closeDialog(){
     dialog.classList.remove("animate-fadein");
@@ -706,167 +535,6 @@ function closeDialog(){
         popup.classList.remove("animate-slidedown")
         dialog.close();
     }, {once: true})
-}
-
-function dragHandler(game){
-    let cloned = null;
-    let containerRect = null;
-    let dataval = null;
-    let currentDrop = null;
-    let isDragging = false;
-    let isMouseDown = false;
-
-    let minX, minY, maxX, maxY = 0;
-    let startX, startY = 0;
-
-    game.addEventListener("dragstart", event => {
-        event.preventDefault()
-    })
-
-    game.addEventListener("mousedown", event => {
-        
-        if(event.target.dataset.draggable === "true"){   
-            isDragging = true;
-            isMouseDown = true;
-            document.body.style.overflow = "hidden"
-            document.body.style.cursor = "grabbing"
-
-            // Get size of game screen to calc bounds of drag
-            containerRect = game.getBoundingClientRect();
-            minX = containerRect.left;
-            maxX = containerRect.right;
-            minY = containerRect.bottom;
-            maxY = containerRect.top;
-
-            // Get size of drag element to calc clone drag offset
-            const rect = event.target.getBoundingClientRect();
-            startX = event.clientX - rect.left;
-            startY = event.clientY - rect.top;
-
-            
-            cloned = event.target.cloneNode(true);
-            cloned.style.left = `${event.clientX - startX}px`;
-            cloned.style.top = `${event.clientY - startY}px`;
-            cloned.style.width = `${rect.width}px`;
-            cloned.style.height = `${rect.height}px`
-            cloned.classList.add("dragging__clone")
-            document.body.appendChild(cloned)
-
-            dataval = event.target.dataset.value;
-
-            event.target.style.zIndex = "9998"
-            event.target.style.display = "none"
-
-            game.style.userSelect = "none"
-        }
-    })
-
-    game.addEventListener("mousemove", event => {
-        
-        if(isDragging && cloned){
-            let newX = event.clientX - startX;
-            let newY = event.clientY - startY;
-
-            newX = Math.max(minX, Math.min(maxX - cloned.offsetWidth, newX))
-            newY = Math.max(maxY, Math.min(minY - cloned.offsetHeight, newY))
-
-            //console.log("X: ", newX, " Y: ", newY)
-            cloned.style.left = `${newX}px`
-            cloned.style.top = `${newY}px`
-
-            let element = document.elementFromPoint(event.clientX, event.clientY);
-            let droppable = element?.closest("[data-droppable='true']")
-            dragHighlight(droppable);
-        }
-    })
-
-    game.addEventListener("mouseup", event => {
-
-        if(isDragging && cloned){
-            const droppable = event.target.closest("[data-droppable='true']")
-            const dragged = game.querySelector(`[data-value="${dataval}"]`)
-            if(droppable){            
-                // Create and append div placeholder to draggable
-                const div = document.createElement("div");
-                div.textContent = dragged.textContent;
-                div.className = "matching__dropped";
-                div.dataset.value = dragged.dataset.value;
-                droppable.appendChild(div);
-    
-                // Edit the initial dragged element so it is omitted from the list 
-                dragged.style.display = "none";
-                dragged.dataset.draggable = "false"
-    
-                // Edit the draggable so that no other elements can be dragged in
-                droppable.setAttribute("data-droppable", false);
-                dragHighlight(null)
-
-            }
-            else if(!droppable){
-                dragged.style.display = "";
-
-            }
-            dragCleanUp();
-        }
-    })
-
-    game.addEventListener("mouseleave", () => {
-        if(isDragging){
-            let element = game.querySelector(`[data-value="${dataval}"]`);
-            element.style.display = "";
-            dragCleanUp();
-            dragHighlight(null);
-        } 
-    })
-
-    function dragCleanUp(){
-
-        if(cloned){
-            document.body.removeChild(cloned);
-            cloned = null;
-        }
-
-        dataval = null;
-        isDragging = false;
-        isMouseDown = false;
-        document.body.style.overflow = "";
-        document.body.style.cursor = ""
-        game.style.userSelect = ""
-
-    }
-
-    function dragHighlight(droppable){
-        if(currentDrop){
-            currentDrop.classList.remove("drag-highlight")
-        }
-        if(droppable){
-            droppable.classList.add("drag-highlight")
-        }
-        currentDrop = droppable;
-    }
-}
-
-function drawCounter(){
-    let main = document.querySelector(".content");
-    let html = `
-        <div class="content__moves">
-            <h3 class="moves">
-                <span id="player-moves">${player.moves}</span> / 
-                <span id="total-moves">${movesleft}</span>
-            </h3>
-        </div>
-    `
-    main.insertAdjacentHTML("afterbegin", html);
-}
-
-function setFocus(element){
-    let prevFocus = document.querySelector(".focused");
-    if(prevFocus){
-        prevFocus.classList.remove("focused")
-        prevFocus.firstElementChild.style.color = "white";
-    }
-    element.parentNode.classList.add("focused")
-    element.style.color = "black";
 }
 
 function updateCounter(){
@@ -890,15 +558,12 @@ function addEvents(){
             event.target.classList.add("visited");
             let row = event.target.getAttribute("data-row");
             let col = event.target.getAttribute("data-col");
-            maze[row][col].visited = true;
-            player.position.x = row;
-            player.position.y = col;
-            checkExit(row, col);
-            setBounds(row, col);
-            setMoveable();
-            updateTiles();
+            logic.movePlayer(row, col)
+            logic.calcPlayerBounds(row, col)
+            logic.calcMoveable();
+            logic.updateMazeTiles();
             updateAnimation(row, col);
-            gameType(row, col);
+            //console.log(logic.getMazeTile(row, col))
         }
     })
 

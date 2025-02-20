@@ -12,7 +12,7 @@ export const getWords = () => {
 
 export const getRandomWords = () => {
     let randomset = new Set();
-    while(randomset.size < 3){
+    while(randomset.size < 4){
         let index = Math.floor(Math.random() * words.length);
         randomset.add(words[index]);
     }
