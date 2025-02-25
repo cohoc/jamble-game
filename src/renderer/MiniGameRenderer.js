@@ -6,6 +6,7 @@ export default class MiniGameRenderer{
         this.registry = registry;
         this.template = null;
         this.gamescreen = null;
+        this.timerContainer = null;
         this.handlers = {
             matching: this.handleMatchingGame.bind(this),
             quiz: this.handleQuizGame.bind(this),

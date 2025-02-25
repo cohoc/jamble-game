@@ -6,17 +6,17 @@
 **/
 
 export default class Timer{
-    constructor(endTime, tickrate, displayElement){
-        this.displayElement = displayElement;
-        this.endTime = endTime || 60000;
-        this.tickrate = tickrate || 1000;
-        this.currentTime = endTime;
+    constructor(){
+        this.displayElement = null;
+        this.tickrate = 1000;
+        this.endTime = null;
+        this.currentTime = null;
         this.interval = null;
-
-        this.createDisplay();
+        this.onTimerEnd = null;
     }
 
     createDisplay(){
+
         const svgNS = "http://www.w3.org/2000/svg";
 
         this.svg = document.createElementNS(svgNS, "svg");
@@ -83,29 +83,47 @@ export default class Timer{
                 M 0 0 H 100 V 100 H 0 Z
             `;
         }
-        
         this.maskPath.setAttribute("d", pathData)
     }
 
-    start(){
-        
+    setContainer(containerElemenet){
+        this.displayElement = containerElemenet;
+        this.createDisplay();
+    }
+
+    setTimer(endTime){
+        this.endTime = endTime;
+        this.currentTime = endTime;
+    }
+
+    setTimerCallback(callback){
+        this.onTimerEnd = callback;
+    }
+
+    startTimer(){
+        console.log("timer starting ...")
         this.updateMask();
         this.interval = setInterval(() => {
             this.currentTime -= this.tickrate;
+            //console.log(this.currentTime)
             this.updateMask();
 
             if(this.currentTime <= 0){
-                this.stop()
+                this.onTimerEnd();
+                this.stopTimer();
             }
         }, this.tickrate)
     }
 
-    stop(){
+    stopTimer(){
         clearInterval(this.interval);
+        this.displayElement = null;
+        this.endTime = null;
+        this.currentTime = null;
         this.interval = null;
+        this.onTimerEnd = null;
         //this.bgCircle.setAttribute("fill", "");
         //this.maskBg.setAttribute("fill", "");
-
     }
 
     updateDisplay(){

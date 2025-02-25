@@ -37,12 +37,8 @@ export default class MatchingGame{
         }
     }
 
-    start(){
+    getMiniGameData(){
         return { type: "matching", data: this.shuffled};
-    }
-
-    stop(){
-        console.log("minigame completed")
     }
 
     validateSelection(userPairings){

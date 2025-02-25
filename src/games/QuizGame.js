@@ -22,7 +22,7 @@ export default class QuizGame{
         return array.map(item => item.word);
     }
 
-    start(){
+    getMiniGameData(){
         //console.log("quiz minigame started")
         let obj = {
             correct: {type: `${this.correct.type}`, definition: this.correct.definition},

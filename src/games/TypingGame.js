@@ -7,18 +7,9 @@ export default class TypingGame{
         this.words = this.setTypingWords();
         this.current = this.setCurrentWord();
         this.userinput = "";
-    }
-
-    checkTyping(){
-        let textinput = document.querySelector(".typing-input")
-        textinput.addEventListener("input", () => {
-            let currentword = textinput.value;
-            textinput.setAttribute("value", currentword)
-            //console.log(currentword)
-            if(currentword === this.current.word){
-                textinput.value = ""
-            }    
-        })
+        this.correctWords = 0;
+        this.targetWords = 5;
+        this.isRunning = false;
     }
 
     setCurrentWord(){
@@ -35,7 +26,7 @@ export default class TypingGame{
         return inputStr;
     }
 
-    start(){
+    getMiniGameData(){
         //console.log("typing minigame started")
         console.log(this.current)
         return {

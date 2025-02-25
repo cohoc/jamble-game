@@ -1,13 +1,19 @@
+import Timer from "../utils/timer";
+
 export default class GameLogic{
     constructor(maze, player, renderer){
         this.maze = maze;
         this.player = player;
         this.renderer = renderer;
 
+        this.tile = null;
+        this.minigame = null;
+
         this.gamedata = {};
         this.gameresult = {};
-        this.tile = null;
         this.userSelections = {};
+
+        this.timer = new Timer();
     }
 
     calcPlayerBounds(x, y){
@@ -42,9 +48,13 @@ export default class GameLogic{
         return this.userSelections;
     }
 
+    setMiniGame(){
+        this.minigame = this.tile.event;
+    }
+
     handleTileEvent(){
-        if(typeof this.tile.event === "object"){
-            this.startGame()
+        if(typeof this.minigame === "object"){
+            this.miniGameStart()
         }
         else{
             console.log(this.tile.event)
@@ -64,7 +74,7 @@ export default class GameLogic{
             this.miniGameUpdate()
 
             if(this.gameresult?.isComplete === true){
-                this.stopGame()
+                this.miniGameStop()
                 this.miniGameCleanUp()
             }
 
@@ -76,7 +86,7 @@ export default class GameLogic{
 
         else if(action === "submit"){
             this.gameresult = this.tile.event.validateSelection(this.userSelections)
-            this.stopGame()
+            this.miniGameStop()
             this.miniGameCleanUp()
         }
     }
@@ -86,9 +96,10 @@ export default class GameLogic{
     }
 
     miniGameCleanUp(){
+        this.tile = null;
+        this.minigame = null;
         this.gamedata = {};
         this.gameresult = {};
-        this.tile = null;
         this.userSelections = {};
     }
 
@@ -96,21 +107,66 @@ export default class GameLogic{
         this.renderer.update(this.gameresult)
     }
 
+    miniGameStart(){
+        console.log("GameLogic: starting minigame")
+        this.minigame.isRunning = true;
+        this.gamedata = this.minigame.getMiniGameData();
+        this.timerInit()
+        this.observeGame()
+        this.renderer.displayMiniGame(this.gamedata.type, this.gamedata.data, this.minigameCallback.bind(this))
+    }
+
+    miniGameStop(){
+        console.log("GameLogic: stopping minigame")
+        this.minigame.isRunning = false;
+        this.renderer.clearMiniGame(this.gameresult);
+    }
+
     movePlayer(x, y){
         this.tile = this.getMazeTile(x, y)
+        this.setMiniGame();
         this.player.setPosition(parseInt(x), parseInt(y));
         this.checkExit()
         this.handleTileEvent()
     }
 
-    startGame(){
-        this.userSelections = [];
-        this.gamedata = this.tile.event.start();
-        this.renderer.displayMiniGame(this.gamedata.type, this.gamedata.data, this.minigameCallback.bind(this))
+    observeGame(){
+        const target = document.querySelector(".content");
+        if(!target){
+            console.error("no target for timer found");
+            return;
+        }
+        const observer = new MutationObserver((mutations, obs) => {
+            const timerElement = document.querySelector(".timer-container")
+            if(timerElement){
+                //console.log(this.minigame.constructor.name)
+                this.timer.setContainer(timerElement)
+                this.timer.setTimerCallback(this.timerCallback.bind(this));
+                this.timer.startTimer()
+                obs.disconnect()
+            }
+            else{
+                if(this.minigame === null){
+                    obs.disconnect()
+                    console.log("observer disconnected")
+                };
+                
+            }
+        })
+        observer.observe(target, {childList: true, subtree: true})
     }
 
-    stopGame(){
-        this.renderer.clearMiniGame(this.gameresult);
+    timerInit(){
+        const timemap = {
+            "MatchingGame": 30000,
+            "QuizGame": 15000,
+            "TypingGame": 30000
+        }
+        this.timer.setTimer(timemap[this.minigame.constructor.name])
+    }
+
+    timerCallback(){
+        this.miniGameStop();
     }
 
     updateMazeTiles(){
