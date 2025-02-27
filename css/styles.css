@@ -463,7 +463,7 @@ body{
     flex: 1 1 35vh;
     padding-inline: 2rem;
     font-size: 4rem;
-    border-top: 1px solid rgba(184, 184, 184, 0.25);
+    border-top: 2px solid rgba(184, 184, 184, 0.25);
     align-content: center;
     justify-items: center;
 }
@@ -616,6 +616,40 @@ body{
     background: var(--green);
     transform: scaleX(0);
     transform-origin: left;
+}
+
+.progress-circle-container{
+    position: absolute;
+    width: 88px;
+    height: 88px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.progress-circle-fill{
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform: scaleX(0);
+    transform-origin: left;
+    background: var(--green);
+    transition: transform 250ms ease;
+    animation-delay: 125ms;
+}
+
+.timer-highlighted{
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: 6px solid var(--green);
+    border-radius: 50%;
+}
+
+.timer-svg{
+    border: 2px solid rgba(184, 184, 184, 0.25);
 }
 
 /* 

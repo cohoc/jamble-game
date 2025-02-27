@@ -20,14 +20,15 @@ export default class Timer{
         const svgNS = "http://www.w3.org/2000/svg";
 
         this.svg = document.createElementNS(svgNS, "svg");
-        this.svg.setAttribute("width", "100px");
-        this.svg.setAttribute("height", "100px");
-        this.svg.setAttribute("viewBox", "0 0 100 100");
+        this.svg.setAttribute("width", "80px");
+        this.svg.setAttribute("height", "80px");
+        this.svg.setAttribute("viewBox", "0 0 80 80");
+        this.svg.classList.add("timer-svg")
         this.svg.style.position = "absolute"
         this.svg.style.top = "50%"
         this.svg.style.left = "50%"
         this.svg.style.transform = "translate(-50%, -50%)"
-        this.svg.style.background = "var(--lighter-gray)"
+        this.svg.style.background = "var(--dark-gray)"
         this.svg.style.borderRadius = "50%"
  
         this.defs = document.createElementNS(svgNS, "defs")
@@ -35,8 +36,8 @@ export default class Timer{
         this.mask.setAttribute("id", "timerMask");
 
         this.maskBg = document.createElementNS(svgNS, "rect")
-        this.maskBg.setAttribute("width", "100px");
-        this.maskBg.setAttribute("height", "100px");
+        this.maskBg.setAttribute("width", "80px");
+        this.maskBg.setAttribute("height", "80px");
         this.maskBg.setAttribute("fill", "white");
 
         this.maskPath = document.createElementNS(svgNS, "path");
@@ -47,9 +48,9 @@ export default class Timer{
         this.defs.appendChild(this.mask)
 
         this.bgCircle = document.createElementNS(svgNS, "circle");
-        this.bgCircle.setAttribute("cx", "50");
-        this.bgCircle.setAttribute("cy", "50");
-        this.bgCircle.setAttribute("r", "40");
+        this.bgCircle.setAttribute("cx", "40");
+        this.bgCircle.setAttribute("cy", "40");
+        this.bgCircle.setAttribute("r", "36");
         this.bgCircle.setAttribute("fill", "#6BB464");
         this.bgCircle.setAttribute("mask", "url(#timerMask)")
 
@@ -63,7 +64,7 @@ export default class Timer{
         const progress = elapsedTime / this.endTime;
         const angle = Math.max(progress * 360, -1)
 
-        const radius = 50, cx = 50, cy = 50;
+        const radius = 40, cx = 40, cy = 40;
         const radians = (angle - 90) * (Math.PI / 180)
         const x = cx + radius * Math.cos(radians);
         const y = cy + radius * Math.sin(radians);
@@ -80,7 +81,7 @@ export default class Timer{
         }
         else{
             pathData = `
-                M 0 0 H 100 V 100 H 0 Z
+                M 0 0 H 80 V 80 H 0 Z
             `;
         }
         this.maskPath.setAttribute("d", pathData)
@@ -105,7 +106,6 @@ export default class Timer{
         this.updateMask();
         this.interval = setInterval(() => {
             this.currentTime -= this.tickrate;
-            //console.log(this.currentTime)
             this.updateMask();
 
             if(this.currentTime <= 0){

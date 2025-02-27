@@ -280,31 +280,41 @@ export default class MiniGameRenderer{
 
     update(gamedata){
 
-        const progress = this.gamescreen.querySelector(".timer-progress");
+        const progress = this.gamescreen.querySelector(".timer-container")
+        const progressfill = this.gamescreen.querySelector(".timer-progress");
+        const circle = this.gamescreen.querySelector(".progress-circle-container")
+        const circlefill = this.gamescreen.querySelector(".progress-circle-fill")
+        const circleLeft = circle.getBoundingClientRect().left;
+
         const scaleValue = gamedata.length / gamedata.correctLength;
+        const scalePx = scaleValue * progress.clientWidth;
+        const fillValue = Math.min(Math.max(scalePx - circleLeft, 0) / circle.clientWidth , 1);
 
         if (gamedata.isComplete === true){
-            progress.style.transform = "scaleX(1)"
-            progress.style.background = "var(--green)"
+            progressfill.style.transform = "scaleX(1)"
+            progressfill.style.background = "var(--green)"
         }
 
         else if(gamedata.length === 0){
-            progress.style.transform = "scaleX(0)";
-            progress.style.background = "var(--green)"
+            progressfill.style.transform = "scaleX(0)";
+            progressfill.style.background = "var(--green)"
         }
 
         else if(gamedata.length > 0){
+
             if(gamedata.isCorrect === true){
-                progress.style.background = "var(--green)"
-                progress.style.transform = `scaleX(${scaleValue})`
-                //progress.style.width = `${(scaleValue * 100)}%`
+                progressfill.style.background = "var(--green)"
+                progressfill.style.transform = `scaleX(${scaleValue})`
+                circlefill.style.background = "var(--green)"
+                circlefill.style.transform = `scaleX(${fillValue})`
             }
+
             else if(gamedata.isCorrect === false){
-                progress.style.background = "var(--red)"
-                progress.style.width = `100%`
+                progressfill.style.background = "var(--red)"
+                progressfill.style.width = `100%`
+                circlefill.style.background = "var(--red)"
             }
         }
-
     }
 
     clearMiniGame(gameresult){

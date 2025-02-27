@@ -119,6 +119,7 @@ export default class GameLogic{
     miniGameStop(){
         console.log("GameLogic: stopping minigame")
         this.minigame.isRunning = false;
+        this.timer.stopTimer();
         this.renderer.clearMiniGame(this.gameresult);
     }
 
@@ -142,7 +143,7 @@ export default class GameLogic{
                 //console.log(this.minigame.constructor.name)
                 this.timer.setContainer(timerElement)
                 this.timer.setTimerCallback(this.timerCallback.bind(this));
-                this.timer.startTimer()
+                //this.timer.startTimer()
                 obs.disconnect()
             }
             else{

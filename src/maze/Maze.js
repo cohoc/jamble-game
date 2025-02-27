@@ -72,9 +72,9 @@ export default class Maze{
         ]
 
         const minigames = [
-            {type: QuizGame, chance: 30},
-            {type: MatchingGame, chance: 10},
-            {type: TypingGame, chance: 60},
+            {type: QuizGame, chance: 50},
+            {type: MatchingGame, chance: 30},
+            {type: TypingGame, chance: 20},
         ]
 
         const listchoice = {

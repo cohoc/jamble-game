@@ -148,6 +148,11 @@ export default class MiniGameRegistry{
                         <div class="timer-container" class="inter">
                             <div class="timer-progress">
                             </div>
+
+                            <div class="progress-circle-container">
+                                <div class="progress-circle-fill">
+                                </div>
+                            </div>
                         </div>
 
                         <div class="game__typing-word">

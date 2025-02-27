@@ -12615,7 +12615,7 @@ export const words = [
         "definition": "A triumphant shouting; rejoicing; exultation."
     },
     {
-        "word": "judgment",
+        "word": "judgement",
         "type": "noun",
         "definition": "The faculty by the exercise of which a deliberate conclusion is reached."
     },
